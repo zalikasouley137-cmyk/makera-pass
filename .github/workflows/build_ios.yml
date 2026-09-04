@@ -19,27 +19,44 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: 📦 Flutter Pub Get
-        run: flutter pub get
+      - name: 📦 Flutter Pub Get & Assets
+        run: |
+          flutter pub get
+          flutter build bundle
 
-      - name: 🍏 Build iOS IPA (No Codesign)
-        run: flutter build ipa --no-codesign
+      - name: 🍏 Setup CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+          cd ..
 
-      - name: 🗜️ Package into IPA
+      - name: 🏗️ Build iOS for Physical Device (ARM64)
+        run: |
+          xcodebuild -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: 🗜️ Package IPA for Physical iPhones
         run: |
           mkdir -p Payload
-          if [ -d "build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app" ]; then
-            cp -r build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app Payload/
-            zip -r Makera_Pass_iOS.ipa Payload
-          elif [ -f "build/ios/ipa/*.ipa" ]; then
-            cp build/ios/ipa/*.ipa Makera_Pass_iOS.ipa
+          # Search for Runner.app in Xcode build directories
+          APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "Runner.app" | grep "Release-iphoneos" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            APP_PATH=$(find . -name "Runner.app" | head -n 1)
           fi
+          echo "Found compiled app at: $APP_PATH"
+          cp -r "$APP_PATH" Payload/
+          zip -r Makera_Pass_iOS.ipa Payload
 
       - name: 📤 Upload iOS IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Makera-Pass-iOS-Build
-          path: |
-            Makera_Pass_iOS.ipa
-            build/ios/archive/Runner.xcarchive
+          path: Makera_Pass_iOS.ipa
           retention-days: 14
