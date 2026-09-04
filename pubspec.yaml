@@ -1,0 +1,39 @@
+name: makera_agent_pass
+description: "Application Mobile pour Agents de Terrain Makera Event - Offline First & Scan QR Haute Vitesse"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # Base de données Locale (Offline-First)
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  path_provider: ^2.1.1
+
+  # Scanner Caméra Haute Vitesse & QR
+  mobile_scanner: ^5.2.3
+
+  # Réseau & API
+  http: ^1.2.0
+
+  # Retours Haptiques & Animations
+  vibration: ^2.0.1
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.1.0
+  intl: ^0.19.0
+  shared_preferences: ^2.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

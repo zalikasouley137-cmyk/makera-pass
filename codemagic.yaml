@@ -1,0 +1,16 @@
+workflows:
+  ios-workflow:
+    name: Makera Pass iOS Workflow
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      - name: Build iOS IPA
+        script: flutter build ipa --release --no-codesign
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
