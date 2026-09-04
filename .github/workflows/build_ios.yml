@@ -7,17 +7,11 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-14
 
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
-
-      - name: ☕ Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
 
       - name: 🐦 Set up Flutter
         uses: subosito/flutter-action@v2
@@ -28,10 +22,16 @@ jobs:
       - name: 📦 Install Flutter Dependencies
         run: flutter pub get
 
-      - name: 🍎 Build iOS App (No Codesign for Direct Export)
+      - name: 🍎 CocoaPods Install
+        run: |
+          cd ios
+          pod install --repo-update
+          cd ..
+
+      - name: 🏗️ Build iOS (No Codesign)
         run: flutter build ios --release --no-codesign
 
-      - name: 🗜️ Package into IPA Payload
+      - name: 🗜️ Package into IPA
         run: |
           mkdir -p Payload
           cp -r build/ios/iphoneos/Runner.app Payload/
