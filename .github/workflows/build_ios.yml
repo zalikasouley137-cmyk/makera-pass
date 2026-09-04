@@ -19,44 +19,27 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: 📦 Flutter Pub Get & Assets
-        run: |
-          flutter pub get
-          flutter build bundle
+      - name: 📦 Flutter Pub Get
+        run: flutter pub get
 
-      - name: 🍏 Setup CocoaPods
+      - name: 🍏 Build iOS Application Package
         run: |
-          cd ios
-          pod install --repo-update
-          cd ..
+          flutter build ios --simulator --release
 
-      - name: 🏗️ Build iOS for Physical Device (ARM64)
-        run: |
-          xcodebuild -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            build
-
-      - name: 🗜️ Package IPA for Physical iPhones
+      - name: 🗜️ Package into IPA & Zip
         run: |
           mkdir -p Payload
-          # Search for Runner.app in Xcode build directories
-          APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "Runner.app" | grep "Release-iphoneos" | head -n 1)
-          if [ -z "$APP_PATH" ]; then
-            APP_PATH=$(find . -name "Runner.app" | head -n 1)
-          fi
-          echo "Found compiled app at: $APP_PATH"
-          cp -r "$APP_PATH" Payload/
+          cp -r build/ios/iphonesimulator/Runner.app Payload/
           zip -r Makera_Pass_iOS.ipa Payload
+          cd build/ios/iphonesimulator
+          zip -r ../../../Makera_Pass_iOS_Runner.zip Runner.app
+          cd ../../..
 
-      - name: 📤 Upload iOS IPA Artifact
+      - name: 📤 Upload iOS Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Makera-Pass-iOS-Build
-          path: Makera_Pass_iOS.ipa
+          path: |
+            Makera_Pass_iOS.ipa
+            Makera_Pass_iOS_Runner.zip
           retention-days: 14
