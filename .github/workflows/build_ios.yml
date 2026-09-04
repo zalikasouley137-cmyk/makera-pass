@@ -24,7 +24,7 @@ jobs:
 
       - name: 🍏 Build iOS Application Package
         run: |
-          flutter build ios --simulator --release
+          flutter build ios --simulator
 
       - name: 🗜️ Package into IPA & Zip
         run: |
