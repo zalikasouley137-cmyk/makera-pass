@@ -22,14 +22,7 @@ jobs:
       - name: 📦 Flutter Pub Get
         run: flutter pub get
 
-      - name: 🍏 Generate Flutter Config & CocoaPods
-        run: |
-          flutter build ios --config-only
-          cd ios
-          pod install
-          cd ..
-
-      - name: 🏗️ Build iOS (No Codesign)
+      - name: 🏗️ Build iOS App (No Codesign)
         run: flutter build ios --release --no-codesign
 
       - name: 🗜️ Package into IPA
