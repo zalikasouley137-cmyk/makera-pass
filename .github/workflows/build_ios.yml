@@ -19,41 +19,27 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: 📦 Flutter Pub Get & Dependencies
-        run: |
-          flutter pub get
-          flutter build ios --config-only
+      - name: 📦 Flutter Pub Get
+        run: flutter pub get
 
-      - name: 🍏 CocoaPods Install
-        run: |
-          cd ios
-          pod install --repo-update
-          cd ..
-
-      - name: 🏗️ Native Xcode Compilation (Bypass Team Requirement)
-        run: |
-          cd ios
-          xcodebuild -workspace Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            BUILD_DIR=../build/ios \
-            build
-          cd ..
+      - name: 🍏 Build iOS IPA (No Codesign)
+        run: flutter build ipa --no-codesign
 
       - name: 🗜️ Package into IPA
         run: |
           mkdir -p Payload
-          cp -r build/ios/Release-iphoneos/Runner.app Payload/
-          zip -r Makera_Pass_iOS.ipa Payload
+          if [ -d "build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app" ]; then
+            cp -r build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app Payload/
+            zip -r Makera_Pass_iOS.ipa Payload
+          elif [ -f "build/ios/ipa/*.ipa" ]; then
+            cp build/ios/ipa/*.ipa Makera_Pass_iOS.ipa
+          fi
 
       - name: 📤 Upload iOS IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Makera-Pass-iOS-Build
-          path: Makera_Pass_iOS.ipa
+          path: |
+            Makera_Pass_iOS.ipa
+            build/ios/archive/Runner.xcarchive
           retention-days: 14
